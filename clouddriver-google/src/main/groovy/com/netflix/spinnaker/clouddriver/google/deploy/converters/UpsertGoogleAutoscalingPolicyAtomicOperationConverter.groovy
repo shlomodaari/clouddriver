@@ -46,9 +46,16 @@ class UpsertGoogleAutoscalingPolicyAtomicOperationConverter extends AbstractAtom
   @Autowired
   OrchestrationProcessor orchestrationProcessor
 
+  @Autowired
+  Cache cacheView
+
+  @Autowired
+  ObjectMapper objectMapper
+
+
   @Override
   AtomicOperation convertOperation(Map input) {
-    new UpsertGoogleAutoscalingPolicyAtomicOperation(convertDescription(input), googleClusterProvider, googleOperationPoller, atomicOperationsRegistry, orchestrationProcessor)
+    new UpsertGoogleAutoscalingPolicyAtomicOperation(convertDescription(input), googleClusterProvider, googleOperationPoller, atomicOperationsRegistry, orchestrationProcessor, cacheView, objectMapper)
   }
 
   @Override

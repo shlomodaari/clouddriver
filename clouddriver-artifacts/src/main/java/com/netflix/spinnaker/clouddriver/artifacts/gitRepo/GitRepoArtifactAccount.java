@@ -39,6 +39,11 @@ public class GitRepoArtifactAccount implements ArtifactAccount, TokenAuth {
   private final String sshPrivateKeyPassphraseCmd;
   private final String sshKnownHostsFilePath;
   private final boolean sshTrustUnknownHosts;
+  private final String proxyHost;
+  private final Integer proxyPort;
+  private final String proxyUsername;
+  private final String proxyPassword;
+  private final String proxyAuthMethod; // Can be "basic", "negotiate", "ntlm", etc.
 
   @Builder
   @ConstructorBinding
@@ -53,7 +58,12 @@ public class GitRepoArtifactAccount implements ArtifactAccount, TokenAuth {
       String sshPrivateKeyPassphrase,
       String sshPrivateKeyPassphraseCmd,
       String sshKnownHostsFilePath,
-      boolean sshTrustUnknownHosts) {
+      boolean sshTrustUnknownHosts,
+      String proxyHost,
+      Integer proxyPort,
+      String proxyUsername,
+      String proxyPassword,
+      String proxyAuthMethod) {
     this.name = Strings.nullToEmpty(name);
     this.username = Strings.nullToEmpty(username);
     this.password = Strings.nullToEmpty(password);
@@ -64,5 +74,10 @@ public class GitRepoArtifactAccount implements ArtifactAccount, TokenAuth {
     this.sshPrivateKeyPassphraseCmd = Strings.nullToEmpty(sshPrivateKeyPassphraseCmd);
     this.sshKnownHostsFilePath = Strings.nullToEmpty(sshKnownHostsFilePath);
     this.sshTrustUnknownHosts = sshTrustUnknownHosts;
+    this.proxyHost = Strings.nullToEmpty(proxyHost);
+    this.proxyPort = proxyPort != null ? proxyPort : 0;
+    this.proxyUsername = Strings.nullToEmpty(proxyUsername);
+    this.proxyPassword = Strings.nullToEmpty(proxyPassword);
+    this.proxyAuthMethod = Strings.nullToEmpty(proxyAuthMethod);
   }
 }

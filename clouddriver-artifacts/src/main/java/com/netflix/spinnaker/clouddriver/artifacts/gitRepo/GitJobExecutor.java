@@ -387,6 +387,62 @@ public class GitJobExecutor {
           result.put(SSH_KEY_PWD_ENV_VAR, account.getSshPrivateKeyPassphrase());
         }
         break;
+      case NONE:
+        // No authentication needed
+        break;
+    }
+
+    // Configure proxy settings if provided
+    if (!StringUtils.isEmpty(account.getProxyHost()) && account.getProxyPort() > 0) {
+      log.info("Configuring git with proxy: {}:{}", account.getProxyHost(), account.getProxyPort());
+
+      // Build proxy URL - we'll handle authentication separately for better protocol support
+      String proxyUrl = "http://" + account.getProxyHost() + ":" + account.getProxyPort();
+
+      // Set HTTP proxy environment variables for git
+      result.put("http_proxy", proxyUrl);
+      result.put("https_proxy", proxyUrl);
+
+      // Set git configuration using GIT_CONFIG_* environment variables
+      int configCount = 0;
+
+      // Set http.proxy configuration
+      result.put("GIT_CONFIG_KEY_" + configCount, "http.proxy");
+      result.put("GIT_CONFIG_VALUE_" + configCount, proxyUrl);
+      configCount++;
+
+      // Set proxy authentication method if needed
+      if (!StringUtils.isEmpty(account.getProxyUsername())
+          && !StringUtils.isEmpty(account.getProxyPassword())) {
+        log.info("Configuring git with proxy authentication");
+
+        // Set http.proxyAuthMethod based on the configured value
+        String authMethod =
+            !StringUtils.isEmpty(account.getProxyAuthMethod())
+                ? account.getProxyAuthMethod().toLowerCase()
+                : "basic";
+
+        log.info("Configuring git to use {} authentication for proxy", authMethod);
+        result.put("GIT_CONFIG_KEY_" + configCount, "http.proxyAuthMethod");
+        result.put("GIT_CONFIG_VALUE_" + configCount, authMethod);
+        configCount++;
+
+        // For non-negotiate methods, we need to set the credentials
+        if (!"negotiate".equals(authMethod) && !"kerberos".equals(authMethod)) {
+          // Set proxy username and password environment variables
+          log.debug("Setting proxy credentials environment variables");
+          result.put("proxy_user", account.getProxyUsername());
+          result.put("proxy_pass", account.getProxyPassword());
+        }
+      }
+
+      // Set http.followRedirects for proxies
+      result.put("GIT_CONFIG_KEY_" + configCount, "http.followRedirects");
+      result.put("GIT_CONFIG_VALUE_" + configCount, "true");
+      configCount++;
+
+      // Set the total config count
+      result.put("GIT_CONFIG_COUNT", String.valueOf(configCount));
     }
 
     if (log.isDebugEnabled()) {
